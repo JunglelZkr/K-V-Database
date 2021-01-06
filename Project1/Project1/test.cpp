@@ -1,6 +1,9 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include"KVDBHandler.h"
-
+#include<stdio.h>
+#include<ctime>
+#include<string>
+#include"KVDBHandler.h"
 
 void m()
 {

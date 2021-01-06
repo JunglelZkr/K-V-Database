@@ -1,9 +1,11 @@
-
+#define _CRT_SECURE_NO_WARNINGS
 #include<stdio.h>
 #include<ctime>
+#include<string>
 #include"KVDBHandler.h"
-
-class KVDBtest
+#include"test.h"
+using namespace std;
+/*class KVDBtest
 {
 private:
 	string *key;
@@ -11,17 +13,23 @@ private:
 	KVDBHandler *handler;
 	int len;
 	int opcnt;
+	int size;
 public:
 	KVDBtest()
 	{
-		handler = new KVDBHandler("test");
+		size = 1000;
+		handler = new KVDBHandler("test",1);
 		srand((unsigned)time(NULL));
-		key = new string[100];
-		value = new string[100];
+		key = new string[size];
+		value = new string[size];
 		len = 0;
 		opcnt = 0;
 	}
-	void randomString(string &p)
+	void same(string &p)
+	{
+		p = "1";
+	}
+	void randomString(string &p)//生成随机字符串
 	{
 		p.clear();
 		int len = rand() % 20 + 1;
@@ -46,11 +54,11 @@ public:
 	void test()
 	{
 		int op = 0;
-		while (opcnt < 300 || len < 100)
+		while (opcnt < 3 * size || len < size)
 		{
-			if (op == 0)
+			if (op == 0)//set
 			{
-				if (len < 80)
+				if (len < (size * 4 / 5))
 				{
 					randomString(key[len]);
 				}
@@ -59,39 +67,33 @@ public:
 					key[len] = key[rand() % len];
 				}
 				randomString(value[len]);
-				len++;
-				if (value[len - 1].length() == 0 || key[len - 1].length() == 0)
-				{
-					printf("error\n");
-					system("pause");
-				}
-				handler->set(key[len - 1], value[len - 1]);
+				printf("set:%s %s\n", key[len].c_str(), value[len].c_str());
+				printf("写入第%d个数据\n", ++len);
+				handler->set(key[len - 1], value[len - 1],1);
 			}
-			else if (op == 1)
+			else if (op == 1)//get
 			{
 				string testvalue;
 				int index = rand() % len;
-				int result = handler->get(key[index], testvalue);
-				if (result == 0)
-				{
-					return;
-				}
+				handler->get(key[index], testvalue);//获取数据库中对应的value并赋值给testvalue
 				string value_;
-				for (int j = 0; j < len; j++)
+				for (int j = 0; j < len; j++)//在已生成的所有数据中找出最后一个对应的value并赋值给value_
 				{
 					if (key[j] == key[index])
 					{
 						value_ = value[j];
 					}
 				}
-				if (!(testvalue == value_))
+				if (!(testvalue == value_))//数据库返回的test value与实际的value不符
 				{
 					printf("错误：key值为%s\nvalue值应为%s\n实际为%s\n", key[index].c_str(), value_.c_str(), testvalue.c_str());
-					printf("index=%d\nlen=%d\n", index, len);
+					printf("这是第%d个写入的数据\n已经写入%d个数据\n", index + 1, len);
+					double time = clock();
+					printf("用时%.3fs\n", time / 1000);
 					system("pause");
 					return;
 				}
-				if (value_.length() != 0)
+				if (value_.size() != 0)
 				{
 					printf("value值为%s\n", testvalue.c_str());
 				}
@@ -105,17 +107,17 @@ public:
 				int index = rand() % len;
 				string value_;
 				handler->get(key[index], value_);
-				if (value_.length() != 0)
+				if (value_.size() != 0)//判断删除是否有效，若有效则把在所有对应的value值清空
 				{
 					for (int i = 0; i < len; i++)
 					{
-						if(key[i] == key[index])
+						if (key[i] == key[index])
 						{
 							value[i].clear();
 						}
 					}
-					printf("删除了下标为%d的key\n", index);
-					handler->del(key[index]);
+					printf("删除第%d个数据\n", index + 1);
+					handler->remove_(key[index]);
 				}
 				else
 				{
@@ -123,22 +125,22 @@ public:
 					continue;
 				}
 			}
-			printf("操作次数：%d\n\n", ++opcnt);
+			printf("操作次数%d\n\n", ++opcnt);
 			op = randomop();
 		}
 		printf("测试成功\n");
 	}
 	int randomop()
 	{
-		if (len < 0)
+		if (len < size / 10 && len < 100)
 		{
 			return 0;
 		}
-		else if (len < 80)
+		else if (len < (size * 4 / 5))
 		{
 			return rand() % 3;
 		}
-		else if (len < 100)
+		else if (len < size)
 		{
 			int result = rand() % 2;
 			return result == 0 ? result : result + 1;
@@ -154,11 +156,13 @@ public:
 		delete[] value;
 		delete handler;
 	}
-};
+};*/
 int main()
 {
-	
-	KVDBtest test;
-	test.test();
-
+	/*KVDBtest test;
+	test.test();*/
+	m();
+	//double time = clock();
+	//printf("???±%.3fs\n", time / 1000);
+	//m();
 }

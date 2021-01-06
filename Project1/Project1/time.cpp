@@ -2,7 +2,7 @@
 #include"KVDBHandler.h"
 #include<stdio.h>
 #include"time.h"
-localtime_::localtime_()
+localtime_::localtime_()//获取当前时间
 {
 	time_t timer;
 	struct tm *tblock;
@@ -15,13 +15,13 @@ localtime_::localtime_()
 	mintue = tblock->tm_min;
 	sec = tblock->tm_sec;
 }
-void localtime_::settime(const string str)
+void localtime_::settime(const string str)//在日志文件中写入当前时间
 {
 	FILE* fr = fopen(str.c_str(), "a");
 	fprintf(fr, "%d.%d.%d %d:%d:%d ", year,month,day,hour,mintue,sec);
 	fclose(fr);
 }
-void localtime_::setcreate(const string str,const string str2,int i,float j)
+void localtime_::setcreate(const string str,const string str2,int i,float j)//打开或创建一个数据库的日志
 {
 	settime(str);
 	FILE* fr = fopen(str.c_str(), "a");
@@ -54,7 +54,7 @@ void localtime_::setcreate(const string str,const string str2,int i,float j)
 	fwrite(&ch4, 1, 1, fr);
 	fclose(fr);
 }
-void localtime_::setset(const string str, const string str2, const string str3,float i)
+void localtime_::setset(const string str, const string str2, const string str3,float i)//写入一个数据的日志
 {
 	char ch3 = ' ';
 	char ch4 = '\n';
@@ -72,7 +72,7 @@ void localtime_::setset(const string str, const string str2, const string str3,f
 	fwrite(&ch4, 1, 1, fr);
 	fclose(fr);
 }
-void localtime_::setget(const string str, const string str2, const string str3, int i,float j)
+void localtime_::setget(const string str, const string str2, const string str3, int i,float j)//查找一个数据的日志
 {
 	char ch3 = ' ';
 	char ch4 = '\n';
@@ -108,7 +108,7 @@ void localtime_::setget(const string str, const string str2, const string str3, 
 	fwrite(&ch4, 1, 1, fr);
 	fclose(fr);
 }
-void localtime_::setremove(const string str, const string str2, int i, float j)
+void localtime_::setremove(const string str, const string str2, int i, float j)//删除一个数据的日志
 {
 	char ch3 = ' ';
 	char ch4 = '\n';
@@ -144,7 +144,7 @@ void localtime_::setremove(const string str, const string str2, int i, float j)
 	fwrite(&ch4, 1, 1, fr);
 	fclose(fr);
 }
-void localtime_::setpurge(const string str,float i)
+void localtime_::setpurge(const string str,float i)//purge操作的日志
 {
 	char ch3 = ' ';
 	char ch4 = '\n';

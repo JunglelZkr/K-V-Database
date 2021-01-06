@@ -105,14 +105,25 @@ void KVDBHandler::set(const string &key, const string &value,int i) //写入数据，
 	if (key.size() == 0)
 	{
 		cout << "输入数据有误（key值不能为空）" << endl;
+		return;
 	}
 	if (value.size() == 0)
 	{
 		cout << "输入数据有误（value值不能为空）" << endl;
+		return;
 	}
 	if (key.size() != 0 && value.size() != 0)
 	{
 		Data d(key, value);
+		FILE* fq = fopen(name.c_str(), "rb");
+		if (!fq)
+		{
+			cout << "文件打开失败" << endl;
+			system("pause");
+		}
+		fseek(fq, 0L, SEEK_END);
+		int buf = ftell(fq);
+		fclose(fq);
 		FILE* fp = fopen(name.c_str(), "ab");
 		fwrite(&d.klen, sizeof(int), 1, fp);
 		fwrite(&d.vlen, sizeof(int), 1, fp);
@@ -125,6 +136,7 @@ void KVDBHandler::set(const string &key, const string &value,int i) //写入数据，
 			finish = clock();
 			time_ = (float)(finish - start);
 			t1.setset(dname, key, value, time_);
+			ht.insert(key.c_str(), buf);
 			ifpurge();
 			cout << "数据写入成功" << endl;
 		}
@@ -132,14 +144,9 @@ void KVDBHandler::set(const string &key, const string &value,int i) //写入数据，
 		{
 			fclose(fp);
 		}
-		FILE* fq = fopen(name.c_str(), "rb");
-		fseek(fq, 0L, SEEK_END);
-		int buf = ftell(fp);
-		fclose(fq);
-		ht.insert(key.c_str(), buf);
 	}
 }
-int KVDBHandler::get(const string& key, string &value)
+int KVDBHandler::get(const string& key, string &value)//在数据库中查找key所对应的value
 {
 	localtime_ t1;
 	clock_t start, finish;
@@ -156,10 +163,16 @@ int KVDBHandler::get(const string& key, string &value)
 	else
 	{
 		FILE* fp = fopen(name.c_str(), "rb");
+		if (!fp)
+		{
+			cout << "文件打开失败" << endl;
+			system("pause");
+		}
 		int offset=ht.find_(key.c_str());
 		if (offset == -1)
 		{
 			x = 2;
+			fclose(fp);
 			return x;
 		}
 		else
@@ -170,6 +183,7 @@ int KVDBHandler::get(const string& key, string &value)
 			if (key.length() == -buf)
 			{
 				x = 3;
+				fclose(fp);
 				return x;
 			}
 			else
@@ -193,88 +207,9 @@ int KVDBHandler::get(const string& key, string &value)
 		time_ = (float)(finish - start);
 		t1.setget(dname, key, value, x, time_);
 		return x;
-		/*FILE* fp = fopen(name.c_str(), "rb");
-		fseek(fp, 0L, SEEK_END);
-		int size = ftell(fp);
-		fseek(fp, 0L, SEEK_SET);
-		while (ftell(fp) != size)
-		{
-			int buf;
-			fread(&buf, sizeof(int), 1, fp);
-			if (buf == key.length())
-			{
-				int buf1;
-				fread(&buf1, sizeof(int), 1, fp);
-				char* key_ = new char[buf + 1];
-				memset(key_, 0, buf + 1);
-				fread(key_, 1, buf, fp);
-				string key1;
-				for (int i = 0; i < buf; i++)
-				{
-					key1.push_back(key_[i]);
-				}
-				if (key1 == key)
-				{
-					x = 1;
-					value.clear();
-					char* value_ = new char[buf1 + 1];
-					memset(value_, 0, buf1 + 1);
-					fread(value_, 1, buf1, fp);
-					for (int i = 0; i < buf1; i++)
-					{
-						value.push_back(value_[i]);
-					}
-					delete [] value_;
-				}
-				else
-				{
-					x = 2;
-					fseek(fp, buf1, SEEK_CUR);
-				}
-				delete [] key_;
-			}
-			else if (key.length() == -buf)
-			{
-				x = 2;
-				int buf1;
-				int a;
-				a = -buf;
-				fread(&buf1, sizeof(int), 1, fp);
-				char* key_ = new char[a + 1];
-				memset(key_, 0, a + 1);
-				fread(key_, 1, a, fp);
-				string key1;
-				for (int i = 0; i < a; i++)
-				{
-					key1.push_back(key_[i]);
-				}
-				if (key == key1)
-				{
-					x = 3;
-					fseek(fp, buf1, SEEK_CUR);
-					value.clear();
-				}
-				else
-				{
-					fseek(fp, buf1, SEEK_CUR);
-				}
-				delete[] key_;
-			}
-			else
-			{
-				x = 2;
-				int buf1;
-				if (buf < 0)
-				{
-					buf = -buf;
-				}
-				fread(&buf1, sizeof(int), 1, fp);
-				fseek(fp, buf + buf1, SEEK_CUR);
-			}
-		}*/
 	}
 }
-int KVDBHandler::remove_(string key)
+int KVDBHandler::remove_(string key)//在数据库中删除key所对应的value
 {
 	localtime_ t1;
 	clock_t start, finish;
@@ -289,7 +224,21 @@ int KVDBHandler::remove_(string key)
 	}
 	else
 	{
+		FILE* fq = fopen(name.c_str(), "rb");
+		if (!fq)
+		{
+			cout << "文件打开失败" << endl;
+			system("pause");
+		}
+		fseek(fq, 0L, SEEK_END);
+		int buf = ftell(fq);
+		fclose(fq);
 		FILE* fp = fopen(name.c_str(), "ab");
+		if (!fp)
+		{
+			cout << "文件打开失败" << endl;
+			system("pause");
+		}
 		string value;
 		int y=get(key, value);
 		if (value.size() == 0)
@@ -300,6 +249,7 @@ int KVDBHandler::remove_(string key)
 				finish = clock();
 				time_ = (float)(finish - start);
 				t1.setremove(dname, key, 1, time_);
+				fclose(fp);
 				return 1;
 			}
 			if (y == 3)
@@ -325,20 +275,21 @@ int KVDBHandler::remove_(string key)
 			time_ = (float)(finish - start);
 			t1.setremove(dname, key, 3, time_);
 			cnt = cnt + 1;
-			ifpurge();
-			FILE* fq = fopen(name.c_str(), "rb");
-			fseek(fq, 0L, SEEK_END);
-			int buf = ftell(fp);
-			fclose(fq);
 			ht.insert(key.c_str(), buf);
+			ifpurge();
 			return 3;
 		}
 	}
 }
-void KVDBHandler::ifpurge()
+void KVDBHandler::ifpurge()//判断是否需要进行purge操作
 {
 	FILE *fp = fopen(tname.c_str(), "rb+");
-	if (cnt == 10)
+	if (!fp)
+	{
+		cout << "文件打开失败" << endl;
+		system("pause");
+	}
+	if (cnt >= 3)
 	{
 		localtime_ t1;
 		clock_t start, finish;
@@ -357,50 +308,77 @@ void KVDBHandler::ifpurge()
 	fwrite(&cnt, sizeof(int), 1, fp);
 	fclose(fp);
 }
-void KVDBHandler::purge(KVDBHandler &handler_)
+void KVDBHandler::purge(KVDBHandler &handler_)//purge操作
 {
-	FILE* fp = fopen(name.c_str(), "rb");
-	fseek(fp, 0L, SEEK_END);
-	int size = ftell(fp);
-	fseek(fp, 0L, SEEK_SET);
-	while (ftell(fp) != size)
+	FILE *fp = fopen(name.c_str(), "rb+");
+	if (!fp)
 	{
-		int buf;
-		fread(&buf, 1, sizeof(int), fp);
-		int buf1;
-		fread(&buf1, 1, sizeof(int), fp);
+		cout << "文件打开失败" << endl;
+		system("pause");
+	}
+	int i,j,n,t=0;
+	n = ht.m;
+	int *a;
+	a = new int [n];
+	for (i = 0; i < n; i++)
+	{
+		a[i] = 100000000;
+	}
+	for (i = 0; i < 50003; i++)
+	{
+		if (ht.hashtable[i])
+		{
+			HashNode* head = ht.hashtable[i];
+			while (head)
+			{
+				a[t] = head->offset;
+				t = t + 1;
+				head = head->next;
+			}
+		}
+	}
+	int low, high;
+	low = 0;
+	high = n - 1;
+	sort(a, low, high);
+	int begin = 0;
+	int offset0;
+	for (i = 0; i < n; i++)
+	{
+		offset0 = a[i] - begin;
+		fseek(fp, offset0, SEEK_CUR);
+		int buf,buf1;
+		string key0, value0;
+		fread(&buf, sizeof(int), 1, fp);
+		fread(&buf1, sizeof(int), 1, fp);
 		if (buf < 0)
 		{
-			buf = -buf;
-		}
-		char* key_ = new char[buf + 1];
-		memset(key_, 0, buf + 1);
-		fread(key_, 1, buf, fp);
-		string key1;
-		for (int i = 0; i < buf; i++)
-		{
-			key1.push_back(key_[i]);
-		}
-		if (handler_.charge(key1))
-		{
-			fseek(fp, buf1, SEEK_CUR);
+			begin = a[i] + sizeof(int) + sizeof(int) -buf + buf1;
+			fseek(fp, -buf + buf1, SEEK_CUR);
 		}
 		else
 		{
-			string value;
-			get(key1,value);
-			if(value.size()==0)
-			{ 
-				fseek(fp, buf1, SEEK_CUR);
-			}
-			else
+			char* key_ = new char[buf + 1];
+			memset(key_, 0, buf + 1);
+			fread(key_, 1, buf, fp);
+			for (j = 0; j < buf; j++)
 			{
-				handler_.set(key1, value, 0);
-				fseek(fp, buf1, SEEK_CUR);
+				key0.push_back(key_[j]);
 			}
+			char* value_ = new char[buf1 + 1];
+			memset(value_, 0, buf1 + 1);
+			fread(value_, 1, buf1, fp);
+			for (j = 0; j < buf1; j++)
+			{
+				value0.push_back(value_[j]);
+			}
+			delete[] value_;
+			handler_.set(key0, value0, 0);
+			delete[] key_;
+			begin = a[i] + sizeof(int) + sizeof(int) + buf + buf1;
 		}
-		delete[] key_;
 	}
+	delete[] a;
 	fclose(fp);
 	int result = remove(name.c_str());
 	rename(handler_.name.c_str(), name.c_str());
@@ -408,7 +386,7 @@ void KVDBHandler::purge(KVDBHandler &handler_)
 	ht.clear_();
 	ht.CreateHashTable(name);
 }
-bool KVDBHandler::charge(const string key)
+/*bool KVDBHandler::charge(const string key)
 {
 	FILE* fp = fopen(name.c_str(), "rb");
 	fseek(fp, 0L, SEEK_END);
@@ -428,6 +406,7 @@ bool KVDBHandler::charge(const string key)
 		{
 			key1.push_back(key_[i]);
 		}
+		delete[] key_;
 		if (key == key1)
 		{
 			fclose(fp);
@@ -440,6 +419,41 @@ bool KVDBHandler::charge(const string key)
 	}
 	fclose(fp);
 	return false;
+}*/
+void KVDBHandler::sort(int *a, int low, int high)//对数组a进行快排
+{
+	if (high <= low)
+	{
+		return;
+	}
+	int i = low;
+	int j = high + 1;
+	int pivotkey = a[low];
+	while (1)
+	{
+		while (a[++i] < pivotkey)
+		{
+			if (i == high)
+				break;
+		}
+		while (a[--j] > pivotkey)
+		{
+			if (j == low)
+				break;
+		}
+		if (i >= j)
+		{
+			break;
+		}
+		int temp = a[i];
+		a[i] = a[j];
+		a[j] = temp;
+	}
+	int temp = a[low];
+	a[low] = a[j];
+	a[j] = temp;
+	sort(a, low, j - 1);
+	sort(a, j + 1, high);
 }
 KVDBHandler::~KVDBHandler()
 {

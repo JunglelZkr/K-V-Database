@@ -124,9 +124,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Data.cpp" />
-    <ClCompile Include="t.cpp" />
     <ClCompile Include="test.cpp" />
     <ClCompile Include="KVDBHandler.cpp" />
+    <ClCompile Include="tests.cpp" />
     <ClCompile Include="time.cpp" />
     <ClCompile Include="源1.cpp" />
   </ItemGroup>
